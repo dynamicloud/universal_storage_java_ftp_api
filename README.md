@@ -1,5 +1,5 @@
 # Universal Storage Java API
-## Google Drive provider
+## FTP provider
 
 [![Build Status](https://travis-ci.org/dynamicloud/universal_storage_java_ftp_api.svg?branch=master)](https://travis-ci.org/dynamicloud/universal_storage_java_ftp_api)
 ![Version](https://img.shields.io/badge/api-v1.0.0-brightgreen.svg)
