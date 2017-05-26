@@ -1,10 +1,12 @@
 {
-	"provider": "google.drive",
+	"provider": "ftp",
 	"root": "universalstorage",
 	"tmp": "src/test/resources/tmp",
-	"google_drive": {
-		"client_id":"",
-		"client_secret":"",
-		"refresh_token":""
+	"ftp": {
+		"ftp_user": "scmuser",
+		"ftp_password": "sKr1ves2010",
+		"ftp_host": "ec2-52-32-119-240.us-west-2.compute.amazonaws.com",
+		"ftp_port": 21,
+		"ftp_passive": true
 	}
 }
