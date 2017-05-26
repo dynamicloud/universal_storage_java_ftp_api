@@ -204,8 +204,14 @@ public class UniversalFTPStorage extends UniversalStorage {
             throw new UniversalIOException("Invalid path.  The path shouldn't be empty.");
         }
 
+        if (path == null) {
+            path = "";
+        }
+
         try {
-            
+            this.ftp.changeWorkingDirectory("/");
+            path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
+            this.ftp.makeDirectory(path);
         } catch (Exception e) {
             throw new UniversalIOException(e.getMessage());
         }   
@@ -232,8 +238,14 @@ public class UniversalFTPStorage extends UniversalStorage {
             return;
         }
 
+        if (path == null) {
+            path = "";
+        }
+
         try {
-            
+            this.ftp.changeWorkingDirectory("/");
+            path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
+            this.ftp.removeDirectory(path);
         } catch (Exception e) {
             throw new UniversalIOException(e.getMessage());
         }
@@ -299,16 +311,11 @@ public class UniversalFTPStorage extends UniversalStorage {
             throw new UniversalIOException("Invalid path.  Looks like you're trying to retrieve a folder.");
         }
 
-        int index = path.lastIndexOf("/");
-        String fileName = path;
-        if (index > -1) {
-            fileName = path.substring(index + 1);
-            path = path.substring(0, index);
-        } else {
-            path = "";
-        }
-
         try {
+            this.ftp.changeWorkingDirectory("/");
+            this.ftp.changeWorkingDirectory("/");
+            path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
+            this.ftp.retrieveFileStream(path);
             return null;
         } catch (Exception e) {
             throw new UniversalIOException(e.getMessage());
