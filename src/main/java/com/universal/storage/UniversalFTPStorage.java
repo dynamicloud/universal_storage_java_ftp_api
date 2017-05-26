@@ -313,7 +313,6 @@ public class UniversalFTPStorage extends UniversalStorage {
 
         try {
             this.ftp.changeWorkingDirectory("/");
-            this.ftp.changeWorkingDirectory("/");
             path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
             this.ftp.retrieveFileStream(path);
             return null;
