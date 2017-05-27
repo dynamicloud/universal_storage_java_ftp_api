@@ -55,6 +55,18 @@ public class UniversalFTPStorage extends UniversalStorage {
     }
 
     /**
+     * This method is used to disconnect from FTP host, this is useful to avoid open connections.
+     * If you want to connect again to the host, you need to get a new instance.
+     */
+    public void close() {
+        try {
+            this.ftp.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+    }
+
+    /**
      * This method stores a file within the storage provider according to the current settings.
      * The method will replace the file if already exists within the root.
      * 
@@ -314,9 +326,9 @@ public class UniversalFTPStorage extends UniversalStorage {
         try {
             this.ftp.changeWorkingDirectory("/");
             path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
-            this.ftp.retrieveFileStream(path);
-            return null;
+            return this.ftp.retrieveFileStream(path);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new UniversalIOException(e.getMessage());
         }     
     }

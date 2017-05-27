@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import com.universal.error.UniversalStorageException;
 import org.apache.commons.io.FileUtils;
-import com.universal.util.FileUtil;
 import com.universal.storage.settings.UniversalSettings;
 
 /**
@@ -13,20 +12,8 @@ import com.universal.storage.settings.UniversalSettings;
  * This implementation will manage file using a setting to store files within a FTP folder.
  */
 public class TestUniversalFTPStorage extends TestCase {
-    private static UniversalStorage us = null;
-    protected void setUp() {        
-        try {
-            if (us == null) {
-                us = UniversalStorage.Impl.
-                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
     private void setUpTest(String fileName, String folderName) {
+        UniversalStorage us = null;
         try {
             File newFile = new File(System.getProperty("user.home"), fileName);
             if (newFile.exists()) {
@@ -47,16 +34,104 @@ public class TestUniversalFTPStorage extends TestCase {
                 } catch (Exception ignore){}
             }
 
+            us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+
             us.storeFile(new File(System.getProperty("user.home"), fileName), folderName);
             us.storeFile(new File(System.getProperty("user.home"), fileName));
-            us.storeFile(System.getProperty("user.home") + "/" + fileName, folderName);
-            us.storeFile(System.getProperty("user.home") + "/" + fileName);
         } catch (Exception e) {
+            fail(e.getMessage());
+        } finally {
+            try {
+                us.close();
+            } catch (Exception ignore) {}            
+        }
+    }
+
+    public void testRetrieveFileAsFTPProvider() {
+        String fileName = System.nanoTime() + ".txt";
+        UniversalStorage us = null;
+        
+        try {
+            us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+                    
+            setUpTest(fileName, "retrieve/innerfolder");
+            us.retrieveFile("retrieve/innerfolder/" + fileName);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        } finally {
+            us.close();
+        }
+
+        try {
+            us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+            us.retrieveFile("retrieve/innerfolder/Target.txttxt");
+            fail("This method should throw an error.");
+        } catch (UniversalStorageException ignore) {
+            
+        } finally {
+            us.close();
+        }
+
+        try {
+            us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+            FileUtils.copyInputStreamToFile(us.retrieveFileAsStream("retrieve/innerfolder/" + fileName), 
+                new File(System.getProperty("user.home"), fileName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            us.close();
+        }
+    }
+
+    /**
+     * This test will execute the remove file process using a FTP provider.
+     */
+    public void testRemoveFileAsFTPProvider() {
+        String fileName = System.nanoTime() + ".txt";
+        setUpTest(fileName, "remove/innerfolder");
+
+        try {
+            UniversalStorage us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+
+            us.removeFile(fileName);
+            us.removeFile("remove/innerfolder/" + fileName);
+        } catch (UniversalStorageException e) {
             fail(e.getMessage());
         }
     }
 
-    public void testDummy() {
-        setUpTest("fileName", "myNewFolder/innerFolder");
+    /**
+     * This test will execute the create folder process using a FTP provider.
+     */
+    public void testCreateFolderAsFTPProvider() {
+        try {
+            UniversalStorage us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+
+            us.createFolder("myNewFolder");
+            us.removeFolder("myNewFolder");
+        } catch (UniversalStorageException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    /**
+     * This test will clean the storage's context.
+     */
+    public void testCleanStorageAsFTPProvider() {
+        try {
+            UniversalStorage us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+
+            us.clean();
+        } catch (UniversalStorageException e) {
+            fail(e.getMessage());
+        }
     }
 }
