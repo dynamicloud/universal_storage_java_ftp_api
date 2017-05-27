@@ -131,11 +131,14 @@ try {
 
 **Remove file:**
 ```java
+UniversalStorage us = null;
 try {
-      UniversalStorage us = UniversalStorage.Impl.getInstance();
+      us = UniversalStorage.Impl.getInstance();
       us.removeFile("/home/test/resources/settings.json");
 } catch (UniversalStorageException e) {
     e.printStackTrace();
+} finally {
+	us.close();
 }
 
 ```
