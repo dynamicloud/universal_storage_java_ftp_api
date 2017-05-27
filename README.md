@@ -90,7 +90,7 @@ The root folder is the storage where the files will be stored.
 
 The tmp folder is where temporary files will be stored.
 
-### This api will get the access token through either this file or using the environment variable `ftp_user`, `ftp_password` and `ftp_host`
+### This api will get the ftp_user, ftp_password and ftp_host through either this file or using the environment variable `ftp_user`, `ftp_password` and `ftp_host`
 
 # How to use
 **Examples for Storing files:**
