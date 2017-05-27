@@ -3,9 +3,9 @@
 	"root": "universalstorage",
 	"tmp": "src/test/resources/tmp",
 	"ftp": {
-		"ftp_user": "scmuser",
-		"ftp_password": "sKr1ves2010",
-		"ftp_host": "ec2-52-32-119-240.us-west-2.compute.amazonaws.com",
+		"ftp_user": "",
+		"ftp_password": "",
+		"ftp_host": "",
 		"ftp_port": 21,
 		"ftp_passive": true
 	}
