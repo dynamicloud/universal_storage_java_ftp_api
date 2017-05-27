@@ -97,8 +97,9 @@ The tmp folder is where temporary files will be stored.
 
 1. Passing the settings programmatically
 ```java
+UniversalStorage us = null;
 try {
-      UniversalStorage us = UniversalStorage.Impl.
+      us = UniversalStorage.Impl.
           getInstance(new UniversalSettings(new File("/home/test/resources/settings.json")));
       us.storeFile(new File("/home/test/resources/settings.json"), "myfolder/innerfolder");
       us.storeFile(new File("/home/test/resources/settings.json"));
@@ -106,6 +107,8 @@ try {
       us.storeFile(new File("/home/test/resources/settings.json").getAbsolutePath());
 } catch (UniversalStorageException e) {
     fail(e.getMessage());
+} finally {
+	us.close();
 }
 ```
 2. The settings could be passed through either jvm parameter or environment variable.
@@ -125,7 +128,7 @@ try {
 } catch (UniversalStorageException e) {
     fail(e.getMessage());
 } finally {
-  us.close();
+	us.close();
 }
 ```
 
