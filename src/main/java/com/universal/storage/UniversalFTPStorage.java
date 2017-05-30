@@ -22,6 +22,7 @@ import org.apache.commons.net.ftp.FTPFile;
  * This implementation will manage file using a FTP folder as a root storage.
  */
 public class UniversalFTPStorage extends UniversalStorage {
+    private static final String  PREFIX_FTP_URL = "ftp://"; 
     private FTPClient ftp;;
 
     /**
@@ -93,7 +94,9 @@ public class UniversalFTPStorage extends UniversalStorage {
      */
     void storeFile(File file, String path) throws UniversalIOException {
         if (file.isDirectory()) {
-            throw new UniversalIOException(file.getName() + " is a folder.  You should call the createFolder method.");
+            UniversalIOException error = new UniversalIOException(file.getName() + " is a folder.  You should call the createFolder method.");
+            this.triggerOnErrorListeners(error);
+            throw error;
         }
 
         if (path == null) {
@@ -102,6 +105,7 @@ public class UniversalFTPStorage extends UniversalStorage {
 
         InputStream inputStream = null;
         try {
+            this.triggerOnStoreFileListeners();
             this.ftp.changeWorkingDirectory("/");
 
             path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
@@ -120,8 +124,14 @@ public class UniversalFTPStorage extends UniversalStorage {
 
             inputStream = new FileInputStream(file);
             this.ftp.storeFile(file.getName(), inputStream);
+            this.triggerOnFileStoredListeners(new UniversalStorageData(file.getName(), 
+                            (PREFIX_FTP_URL + this.settings.getFTPHost() + ("".equals(path) ? "" : ("/" + path) + "/" + file.getName())).replaceAll("//", "/"),
+                            file.getName(), 
+                            ("".equals(path) ? "" : ("/" + path))));
         } catch (Exception e) {
-            throw new UniversalIOException(e.getMessage());
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
         } finally {
             try {
                 inputStream.close();
@@ -179,15 +189,21 @@ public class UniversalFTPStorage extends UniversalStorage {
         }
 
         try {
+            this.triggerOnRemoveFileListeners();
             this.ftp.changeWorkingDirectory("/");
             path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
 
             boolean success = this.ftp.deleteFile(path);
             if (!success) {
-                throw new UniversalIOException("It couldn't remove this file '" + path + "'");
+                UniversalIOException error = new UniversalIOException("It couldn't remove this file '" + path + "'");
+                this.triggerOnErrorListeners(error);
+                throw error;
             }
+            this.triggerOnFileRemovedListeners();
         } catch (Exception e) {
-            throw new UniversalIOException(e.getMessage());
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
         }      
     }
 
@@ -213,7 +229,9 @@ public class UniversalFTPStorage extends UniversalStorage {
         PathValidator.validatePath(path);
 
         if ("".equals(path.trim())) {
-            throw new UniversalIOException("Invalid path.  The path shouldn't be empty.");
+            UniversalIOException error = new UniversalIOException("Invalid path.  The path shouldn't be empty.");
+            this.triggerOnErrorListeners(error);
+            throw error;
         }
 
         if (path == null) {
@@ -221,12 +239,19 @@ public class UniversalFTPStorage extends UniversalStorage {
         }
 
         try {
+            this.triggerOnCreateFolderListeners();
             this.ftp.changeWorkingDirectory("/");
             path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
             this.ftp.makeDirectory(path);
+            this.triggerOnFolderCreatedListeners(new UniversalStorageData(path, 
+                        (PREFIX_FTP_URL + this.settings.getFTPHost() + ("".equals(path) ? "" : ("/" + path))).replaceAll("//", "/"),
+                        path, 
+                        ("".equals(path) ? "" : ("/" + path))));
         } catch (Exception e) {
-            throw new UniversalIOException(e.getMessage());
-        }   
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
+        }
     }
 
     /**
@@ -255,11 +280,15 @@ public class UniversalFTPStorage extends UniversalStorage {
         }
 
         try {
+            this.triggerOnRemoveFolderListeners();
             this.ftp.changeWorkingDirectory("/");
             path = this.settings.getRoot() + (path.startsWith("/") ? "" : ("/" + path));
-            this.ftp.removeDirectory(path);
+            deleteDirectory(path);
+            this.triggerOnFolderRemovedListeners();
         } catch (Exception e) {
-            throw new UniversalIOException(e.getMessage());
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
         }
     }
 
@@ -279,7 +308,9 @@ public class UniversalFTPStorage extends UniversalStorage {
         }
 
         if (path.trim().endsWith("/")) {
-            throw new UniversalIOException("Invalid path.  Looks like you're trying to retrieve a folder.");
+            UniversalIOException error = new UniversalIOException("Invalid path.  Looks like you're trying to retrieve a folder.");
+            this.triggerOnErrorListeners(error);
+            throw error;
         }
 
         int index = path.lastIndexOf("/");
@@ -294,7 +325,9 @@ public class UniversalFTPStorage extends UniversalStorage {
         try {
             FileUtils.copyInputStreamToFile(stream, retrievedFile);
         } catch (Exception e) {
-            throw new UniversalIOException(e.getMessage());
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
         } finally {
             try {
                 stream.close();
@@ -320,7 +353,9 @@ public class UniversalFTPStorage extends UniversalStorage {
         }
 
         if (path.trim().endsWith("/")) {
-            throw new UniversalIOException("Invalid path.  Looks like you're trying to retrieve a folder.");
+            UniversalIOException error = new UniversalIOException("Invalid path.  Looks like you're trying to retrieve a folder.");
+            this.triggerOnErrorListeners(error);
+            throw error;
         }
 
         try {
@@ -329,7 +364,9 @@ public class UniversalFTPStorage extends UniversalStorage {
             return this.ftp.retrieveFileStream(path);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new UniversalIOException(e.getMessage());
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
         }     
     }
 
@@ -341,7 +378,51 @@ public class UniversalFTPStorage extends UniversalStorage {
         try {
             FileUtils.cleanDirectory(new File(this.settings.getTmp()));
         } catch (Exception e) {
-            throw new UniversalIOException(e.getMessage());
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
         }
+    }
+
+    /**
+     * This method wipes the root folder of a storage, basically, will remove all files and folder in it.  
+     * Be careful with this method because in too many cases this action won't provide a rollback action.
+     */
+    public void wipe() throws UniversalIOException {
+        try {
+            this.ftp.changeWorkingDirectory("/" + this.settings.getRoot());
+            
+            FTPFile[] result = this.ftp.listFiles();
+
+            for (FTPFile f : result) {
+                if (f != null) {
+                    if (f.getType() == FTPFile.DIRECTORY_TYPE) {
+                        deleteDirectory(f.getName());
+                    } else if (f.getType() == FTPFile.FILE_TYPE) {
+                        this.ftp.deleteFile(f.getName());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            UniversalIOException error = new UniversalIOException(e.getMessage());
+            this.triggerOnErrorListeners(error);
+            throw error;
+        }
+    }
+
+    private void deleteDirectory(String path) throws IOException {
+        FTPFile[] files = this.ftp.listFiles(path);
+        if (files.length > 0) {
+            for (FTPFile ftpFile : files) {
+                if (ftpFile.isDirectory()) {
+                    deleteDirectory(path + "/" + ftpFile.getName());
+                } else {
+                    String deleteFilePath = path + "/" + ftpFile.getName();
+                    this.ftp.deleteFile(deleteFilePath);
+                }
+            }
+        }
+
+        this.ftp.removeDirectory(path);
     }
 }

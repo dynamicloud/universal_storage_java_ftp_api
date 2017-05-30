@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import java.io.File;
 import java.io.FileWriter;
 import com.universal.error.UniversalStorageException;
+import com.universal.error.UniversalIOException;
 import org.apache.commons.io.FileUtils;
 import com.universal.storage.settings.UniversalSettings;
 
@@ -36,6 +37,20 @@ public class TestUniversalFTPStorage extends TestCase {
 
             us = UniversalStorage.Impl.
                     getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+
+            us.registerListener(new UniversalStorageListenerAdapter() {
+                public void onFolderCreated(UniversalStorageData data) {
+                    System.out.println(data.toString());
+                }
+
+                public void onFileStored(UniversalStorageData data) {
+                    System.out.println(data.toString());
+                }
+
+                public void onError(UniversalIOException error) {
+                    System.out.println("#### - " + error.getMessage());
+                }
+            });
 
             us.storeFile(new File(System.getProperty("user.home"), fileName), folderName);
             us.storeFile(new File(System.getProperty("user.home"), fileName));
@@ -130,6 +145,20 @@ public class TestUniversalFTPStorage extends TestCase {
                     getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
 
             us.clean();
+        } catch (UniversalStorageException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    /**
+     * This test will wipe the storage's context.
+     */
+    public void testWipeStorageAsFTPProvider() {
+        try {
+            UniversalStorage us = UniversalStorage.Impl.
+                    getInstance(new UniversalSettings(new File("src/test/resources/settings.json")));
+
+            us.wipe();
         } catch (UniversalStorageException e) {
             fail(e.getMessage());
         }
